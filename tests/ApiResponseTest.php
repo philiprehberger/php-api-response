@@ -1,0 +1,197 @@
+<?php
+
+declare(strict_types=1);
+
+namespace PhilipRehberger\ApiResponse\Tests;
+
+use PhilipRehberger\ApiResponse\ApiResponse;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\TestCase;
+
+final class ApiResponseTest extends TestCase
+{
+    #[Test]
+    public function test_success_response_structure(): void
+    {
+        $response = ApiResponse::success();
+
+        $this->assertTrue($response->success);
+        $this->assertSame('OK', $response->message);
+        $this->assertNull($response->data);
+        $this->assertSame(200, $response->statusCode);
+        $this->assertNull($response->errors);
+        $this->assertNull($response->meta);
+
+        $array = $response->toArray();
+        $this->assertArrayHasKey('success', $array);
+        $this->assertArrayHasKey('message', $array);
+        $this->assertArrayHasKey('data', $array);
+        $this->assertArrayNotHasKey('errors', $array);
+        $this->assertArrayNotHasKey('meta', $array);
+    }
+
+    #[Test]
+    public function test_success_with_data(): void
+    {
+        $data = ['id' => 1, 'name' => 'Test'];
+        $response = ApiResponse::success($data);
+
+        $this->assertTrue($response->success);
+        $this->assertSame($data, $response->data);
+        $this->assertSame(200, $response->statusCode);
+    }
+
+    #[Test]
+    public function test_success_with_custom_message(): void
+    {
+        $response = ApiResponse::success(message: 'All good');
+
+        $this->assertSame('All good', $response->message);
+    }
+
+    #[Test]
+    public function test_created_response(): void
+    {
+        $data = ['id' => 42];
+        $response = ApiResponse::created($data);
+
+        $this->assertTrue($response->success);
+        $this->assertSame('Created', $response->message);
+        $this->assertSame($data, $response->data);
+        $this->assertSame(201, $response->statusCode);
+    }
+
+    #[Test]
+    public function test_no_content_response(): void
+    {
+        $response = ApiResponse::noContent();
+
+        $this->assertTrue($response->success);
+        $this->assertSame('No Content', $response->message);
+        $this->assertNull($response->data);
+        $this->assertSame(204, $response->statusCode);
+    }
+
+    #[Test]
+    public function test_error_response(): void
+    {
+        $response = ApiResponse::error();
+
+        $this->assertFalse($response->success);
+        $this->assertSame('Error', $response->message);
+        $this->assertSame(400, $response->statusCode);
+        $this->assertNull($response->errors);
+    }
+
+    #[Test]
+    public function test_error_with_custom_status_code(): void
+    {
+        $errors = ['detail' => 'Forbidden resource'];
+        $response = ApiResponse::error('Forbidden', 403, $errors);
+
+        $this->assertFalse($response->success);
+        $this->assertSame('Forbidden', $response->message);
+        $this->assertSame(403, $response->statusCode);
+        $this->assertSame($errors, $response->errors);
+
+        $array = $response->toArray();
+        $this->assertArrayHasKey('errors', $array);
+    }
+
+    #[Test]
+    public function test_validation_error_response(): void
+    {
+        $errors = [
+            'email' => ['The email field is required.'],
+            'name' => ['The name field is required.'],
+        ];
+        $response = ApiResponse::validationError($errors);
+
+        $this->assertFalse($response->success);
+        $this->assertSame('Validation failed', $response->message);
+        $this->assertSame(422, $response->statusCode);
+        $this->assertSame($errors, $response->errors);
+    }
+
+    #[Test]
+    public function test_not_found_response(): void
+    {
+        $response = ApiResponse::notFound();
+
+        $this->assertFalse($response->success);
+        $this->assertSame('Not Found', $response->message);
+        $this->assertSame(404, $response->statusCode);
+    }
+
+    #[Test]
+    public function test_paginated_response_structure(): void
+    {
+        $items = [['id' => 1], ['id' => 2]];
+        $response = ApiResponse::paginated($items, total: 50, page: 1, perPage: 10);
+
+        $this->assertTrue($response->success);
+        $this->assertSame($items, $response->data);
+        $this->assertSame(200, $response->statusCode);
+        $this->assertNotNull($response->meta);
+
+        $array = $response->toArray();
+        $this->assertArrayHasKey('meta', $array);
+        $this->assertArrayHasKey('pagination', $array['meta']);
+        $this->assertSame(50, $array['meta']['pagination']['total']);
+        $this->assertSame(1, $array['meta']['pagination']['page']);
+        $this->assertSame(10, $array['meta']['pagination']['per_page']);
+        $this->assertSame(5, $array['meta']['pagination']['last_page']);
+    }
+
+    #[Test]
+    public function test_paginated_calculates_last_page(): void
+    {
+        $response = ApiResponse::paginated([], total: 25, page: 1, perPage: 10);
+
+        $meta = $response->toArray()['meta']['pagination'];
+        $this->assertSame(3, $meta['last_page']);
+
+        $response2 = ApiResponse::paginated([], total: 0, page: 1, perPage: 10);
+        $meta2 = $response2->toArray()['meta']['pagination'];
+        $this->assertSame(0, $meta2['last_page']);
+
+        // Edge case: perPage of 0 should not divide by zero
+        $response3 = ApiResponse::paginated([], total: 10, page: 1, perPage: 0);
+        $meta3 = $response3->toArray()['meta']['pagination'];
+        $this->assertSame(10, $meta3['last_page']);
+    }
+
+    #[Test]
+    public function test_response_payload_to_json(): void
+    {
+        $response = ApiResponse::success(['key' => 'value']);
+        $json = $response->toJson();
+
+        $decoded = json_decode($json, true);
+        $this->assertSame(true, $decoded['success']);
+        $this->assertSame('OK', $decoded['message']);
+        $this->assertSame(['key' => 'value'], $decoded['data']);
+    }
+
+    #[Test]
+    public function test_response_payload_json_serializable(): void
+    {
+        $response = ApiResponse::success('test');
+        $encoded = json_encode($response);
+
+        $decoded = json_decode($encoded, true);
+        $this->assertSame(true, $decoded['success']);
+        $this->assertSame('test', $decoded['data']);
+    }
+
+    #[Test]
+    public function test_response_payload_stringable(): void
+    {
+        $response = ApiResponse::success('hello');
+        $string = (string) $response;
+
+        $this->assertIsString($string);
+        $decoded = json_decode($string, true);
+        $this->assertSame('hello', $decoded['data']);
+    }
+}
