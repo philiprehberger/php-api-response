@@ -1,4 +1,4 @@
-# php-api-response
+# PHP API Response
 
 [![Tests](https://github.com/philiprehberger/php-api-response/actions/workflows/tests.yml/badge.svg)](https://github.com/philiprehberger/php-api-response/actions/workflows/tests.yml)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/philiprehberger/php-api-response.svg)](https://packagist.org/packages/philiprehberger/php-api-response)
@@ -144,25 +144,15 @@ All responses follow a consistent structure:
 | `ApiResponse::notFound($message)` | 404 | Resource not found |
 | `ApiResponse::paginated($items, $total, $page, $perPage)` | 200 | Paginated list with metadata |
 
-## Testing
+## Development
 
 ```bash
 composer install
 vendor/bin/phpunit
-```
-
-### Code Style
-
-```bash
-vendor/bin/pint
-```
-
-### Static Analysis
-
-```bash
+vendor/bin/pint --test
 vendor/bin/phpstan analyse
 ```
 
 ## License
 
-MIT License. See [LICENSE](LICENSE) for details.
+MIT
