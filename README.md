@@ -4,7 +4,7 @@
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/philiprehberger/php-api-response.svg)](https://packagist.org/packages/philiprehberger/php-api-response)
 [![License](https://img.shields.io/packagist/l/philiprehberger/php-api-response.svg)](https://packagist.org/packages/philiprehberger/php-api-response)
 
-Standardized API response builder for consistent JSON APIs. Framework-agnostic with optional Laravel integration.
+Standardized API response builder for consistent JSON APIs.
 
 ## Requirements
 
