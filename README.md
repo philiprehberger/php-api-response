@@ -2,13 +2,13 @@
 
 [![Tests](https://github.com/philiprehberger/php-api-response/actions/workflows/tests.yml/badge.svg)](https://github.com/philiprehberger/php-api-response/actions/workflows/tests.yml)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/philiprehberger/php-api-response.svg)](https://packagist.org/packages/philiprehberger/php-api-response)
-[![License](https://img.shields.io/packagist/l/philiprehberger/php-api-response.svg)](https://packagist.org/packages/philiprehberger/php-api-response)
+[![License](https://img.shields.io/github/license/philiprehberger/php-api-response)](LICENSE)
 
 Standardized API response builder for consistent JSON APIs.
 
 ## Requirements
 
-- PHP ^8.2
+- PHP 8.2+
 
 ## Installation
 
@@ -112,7 +112,7 @@ public function index(): JsonResponse
 }
 ```
 
-## Response Shape
+### Response Shape
 
 All responses follow a consistent structure:
 
