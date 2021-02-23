@@ -12,6 +12,7 @@ final class ResponsePayload implements JsonSerializable, Stringable
     /**
      * @param  array<string, mixed>|null  $errors
      * @param  array<string, mixed>|null  $meta
+     * @param  array<string, string>  $headers
      */
     public function __construct(
         public readonly bool $success,
@@ -20,7 +21,53 @@ final class ResponsePayload implements JsonSerializable, Stringable
         public readonly ?array $errors = null,
         public readonly int $statusCode = 200,
         public readonly ?array $meta = null,
+        public readonly array $headers = [],
     ) {}
+
+    /**
+     * @param  array<string, mixed>  $meta
+     */
+    public function withMeta(array $meta): self
+    {
+        return new self(
+            success: $this->success,
+            message: $this->message,
+            data: $this->data,
+            errors: $this->errors,
+            statusCode: $this->statusCode,
+            meta: array_merge($this->meta ?? [], $meta),
+            headers: $this->headers,
+        );
+    }
+
+    /**
+     * @param  array<string, string>  $headers
+     */
+    public function withHeaders(array $headers): self
+    {
+        return new self(
+            success: $this->success,
+            message: $this->message,
+            data: $this->data,
+            errors: $this->errors,
+            statusCode: $this->statusCode,
+            meta: $this->meta,
+            headers: array_merge($this->headers, $headers),
+        );
+    }
+
+    public function withStatusCode(int $code): self
+    {
+        return new self(
+            success: $this->success,
+            message: $this->message,
+            data: $this->data,
+            errors: $this->errors,
+            statusCode: $code,
+            meta: $this->meta,
+            headers: $this->headers,
+        );
+    }
 
     /**
      * @return array<string, mixed>

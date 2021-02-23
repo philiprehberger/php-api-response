@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhilipRehberger\ApiResponse\Tests;
 
 use PhilipRehberger\ApiResponse\ApiResponse;
+use PhilipRehberger\ApiResponse\ResponsePayload;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -193,5 +194,102 @@ final class ApiResponseTest extends TestCase
         $this->assertIsString($string);
         $decoded = json_decode($string, true);
         $this->assertSame('hello', $decoded['data']);
+    }
+
+    #[Test]
+    public function test_with_meta_merges_metadata(): void
+    {
+        $response = ApiResponse::success(['id' => 1])
+            ->withMeta(['request_id' => 'abc-123']);
+
+        $this->assertSame(['request_id' => 'abc-123'], $response->meta);
+
+        $array = $response->toArray();
+        $this->assertArrayHasKey('meta', $array);
+        $this->assertSame('abc-123', $array['meta']['request_id']);
+    }
+
+    #[Test]
+    public function test_with_meta_merges_with_existing_meta(): void
+    {
+        $response = ApiResponse::paginated([['id' => 1]], total: 10, page: 1, perPage: 5)
+            ->withMeta(['request_id' => 'abc-123']);
+
+        $this->assertArrayHasKey('pagination', $response->meta);
+        $this->assertSame('abc-123', $response->meta['request_id']);
+        $this->assertSame(10, $response->meta['pagination']['total']);
+    }
+
+    #[Test]
+    public function test_with_headers_attaches_headers(): void
+    {
+        $response = ApiResponse::success()
+            ->withHeaders(['X-Request-Id' => 'abc-123', 'X-Rate-Limit' => '100']);
+
+        $this->assertSame('abc-123', $response->headers['X-Request-Id']);
+        $this->assertSame('100', $response->headers['X-Rate-Limit']);
+    }
+
+    #[Test]
+    public function test_with_headers_merges_with_existing_headers(): void
+    {
+        $response = ApiResponse::success()
+            ->withHeaders(['X-Request-Id' => 'abc-123'])
+            ->withHeaders(['X-Rate-Limit' => '100']);
+
+        $this->assertSame('abc-123', $response->headers['X-Request-Id']);
+        $this->assertSame('100', $response->headers['X-Rate-Limit']);
+    }
+
+    #[Test]
+    public function test_with_status_code_overrides_status(): void
+    {
+        $response = ApiResponse::success(['id' => 1])
+            ->withStatusCode(202);
+
+        $this->assertSame(202, $response->statusCode);
+        $this->assertTrue($response->success);
+    }
+
+    #[Test]
+    public function test_with_methods_return_new_instances(): void
+    {
+        $original = ApiResponse::success(['id' => 1]);
+
+        $withMeta = $original->withMeta(['key' => 'value']);
+        $withHeaders = $original->withHeaders(['X-Custom' => 'test']);
+        $withStatus = $original->withStatusCode(202);
+
+        $this->assertNotSame($original, $withMeta);
+        $this->assertNotSame($original, $withHeaders);
+        $this->assertNotSame($original, $withStatus);
+
+        // Original is unchanged
+        $this->assertNull($original->meta);
+        $this->assertSame([], $original->headers);
+        $this->assertSame(200, $original->statusCode);
+    }
+
+    #[Test]
+    public function test_fluent_chaining(): void
+    {
+        $response = ApiResponse::success(['id' => 1])
+            ->withMeta(['request_id' => 'abc'])
+            ->withHeaders(['X-Custom' => 'header'])
+            ->withStatusCode(202);
+
+        $this->assertInstanceOf(ResponsePayload::class, $response);
+        $this->assertSame(202, $response->statusCode);
+        $this->assertSame('abc', $response->meta['request_id']);
+        $this->assertSame('header', $response->headers['X-Custom']);
+        $this->assertSame(['id' => 1], $response->data);
+    }
+
+    #[Test]
+    public function test_default_headers_is_empty_array(): void
+    {
+        $response = ApiResponse::success();
+
+        $this->assertSame([], $response->headers);
     }
 }
