@@ -36,7 +36,7 @@ final class ApiResponse
     }
 
     /**
-     * @param array<string, mixed>|null $errors
+     * @param  array<string, mixed>|null  $errors
      */
     public static function error(string $message = 'Error', int $statusCode = 400, ?array $errors = null): ResponsePayload
     {
@@ -49,7 +49,7 @@ final class ApiResponse
     }
 
     /**
-     * @param array<string, mixed> $errors
+     * @param  array<string, mixed>  $errors
      */
     public static function validationError(array $errors, string $message = 'Validation failed'): ResponsePayload
     {
@@ -71,7 +71,7 @@ final class ApiResponse
     }
 
     /**
-     * @param array<int, mixed> $items
+     * @param  array<int, mixed>  $items
      */
     public static function paginated(array $items, int $total, int $page, int $perPage): ResponsePayload
     {
