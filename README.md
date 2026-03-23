@@ -112,6 +112,28 @@ public function index(): JsonResponse
 }
 ```
 
+### Fluent Chaining
+
+All `with*` methods return a new `ResponsePayload` instance, keeping the original unchanged:
+
+```php
+$response = ApiResponse::success(['id' => 1, 'name' => 'John'])
+    ->withMeta(['request_id' => 'abc-123', 'version' => '2.0'])
+    ->withHeaders(['X-Request-Id' => 'abc-123'])
+    ->withStatusCode(202);
+
+// Merge additional metadata onto a paginated response
+$response = ApiResponse::paginated($users, total: 150, page: 2, perPage: 25)
+    ->withMeta(['cache' => 'hit']);
+
+// Attach headers for use in your framework's response
+$payload = ApiResponse::created(['id' => 42])
+    ->withHeaders(['Location' => '/users/42']);
+
+return response()->json($payload->toArray(), $payload->statusCode)
+    ->withHeaders($payload->headers);
+```
+
 ### Response Shape
 
 All responses follow a consistent structure:
@@ -143,6 +165,14 @@ All responses follow a consistent structure:
 | `ApiResponse::validationError($errors, $message)` | 422 | Validation failure with field errors |
 | `ApiResponse::notFound($message)` | 404 | Resource not found |
 | `ApiResponse::paginated($items, $total, $page, $perPage)` | 200 | Paginated list with metadata |
+
+### Fluent Methods on `ResponsePayload`
+
+| Method | Description |
+|--------|-------------|
+| `withMeta(array $meta)` | Returns a new instance with merged metadata |
+| `withHeaders(array $headers)` | Returns a new instance with custom response headers |
+| `withStatusCode(int $code)` | Returns a new instance with overridden HTTP status code |
 
 ## Development
 
