@@ -3,6 +3,7 @@
 [![Tests](https://github.com/philiprehberger/php-api-response/actions/workflows/tests.yml/badge.svg)](https://github.com/philiprehberger/php-api-response/actions/workflows/tests.yml)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/philiprehberger/php-api-response.svg)](https://packagist.org/packages/philiprehberger/php-api-response)
 [![License](https://img.shields.io/github/license/philiprehberger/php-api-response)](LICENSE)
+[![Sponsor](https://img.shields.io/badge/sponsor-GitHub%20Sponsors-ec6cb9)](https://github.com/sponsors/philiprehberger)
 
 Standardized API response builder for consistent JSON APIs.
 
