@@ -4,6 +4,15 @@ All notable changes to `php-api-response` will be documented in this file.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-04-06
+
+### Added
+- `ApiResponse::unauthorized($message, $errors)` static helper for 401 responses
+- `ApiResponse::forbidden($message, $errors)` static helper for 403 responses
+- `ApiResponse::accepted($data, $message)` static helper for 202 responses
+- `ApiResponse::internalServerError($message, $errors)` static helper for 500 responses
+- `ResponsePayload::withPagination(int $total, int $page, int $perPage)` chainable method that merges a `pagination` array (with computed `last_page`) into meta
+
 ## [1.1.1] - 2026-03-31
 
 ### Changed

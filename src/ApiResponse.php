@@ -71,6 +71,55 @@ final class ApiResponse
     }
 
     /**
+     * @param  array<string, mixed>|null  $errors
+     */
+    public static function unauthorized(string $message = 'Unauthorized', mixed $errors = null): ResponsePayload
+    {
+        return new ResponsePayload(
+            success: false,
+            message: $message,
+            errors: is_array($errors) ? $errors : null,
+            statusCode: 401,
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $errors
+     */
+    public static function forbidden(string $message = 'Forbidden', mixed $errors = null): ResponsePayload
+    {
+        return new ResponsePayload(
+            success: false,
+            message: $message,
+            errors: is_array($errors) ? $errors : null,
+            statusCode: 403,
+        );
+    }
+
+    public static function accepted(mixed $data = null, string $message = 'Accepted'): ResponsePayload
+    {
+        return new ResponsePayload(
+            success: true,
+            message: $message,
+            data: $data,
+            statusCode: 202,
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $errors
+     */
+    public static function internalServerError(string $message = 'Internal Server Error', mixed $errors = null): ResponsePayload
+    {
+        return new ResponsePayload(
+            success: false,
+            message: $message,
+            errors: is_array($errors) ? $errors : null,
+            statusCode: 500,
+        );
+    }
+
+    /**
      * @param  array<int, mixed>  $items
      */
     public static function paginated(array $items, int $total, int $page, int $perPage): ResponsePayload
