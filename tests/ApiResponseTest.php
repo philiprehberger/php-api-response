@@ -286,6 +286,104 @@ final class ApiResponseTest extends TestCase
     }
 
     #[Test]
+    public function test_unauthorized_response(): void
+    {
+        $response = ApiResponse::unauthorized();
+
+        $this->assertFalse($response->success);
+        $this->assertSame('Unauthorized', $response->message);
+        $this->assertSame(401, $response->statusCode);
+        $this->assertNull($response->errors);
+
+        $errors = ['reason' => 'token expired'];
+        $custom = ApiResponse::unauthorized('Token expired', $errors);
+        $this->assertSame('Token expired', $custom->message);
+        $this->assertSame($errors, $custom->errors);
+    }
+
+    #[Test]
+    public function test_forbidden_response(): void
+    {
+        $response = ApiResponse::forbidden();
+
+        $this->assertFalse($response->success);
+        $this->assertSame('Forbidden', $response->message);
+        $this->assertSame(403, $response->statusCode);
+        $this->assertNull($response->errors);
+
+        $errors = ['reason' => 'insufficient scope'];
+        $custom = ApiResponse::forbidden('No access', $errors);
+        $this->assertSame('No access', $custom->message);
+        $this->assertSame($errors, $custom->errors);
+    }
+
+    #[Test]
+    public function test_accepted_response(): void
+    {
+        $response = ApiResponse::accepted();
+
+        $this->assertTrue($response->success);
+        $this->assertSame('Accepted', $response->message);
+        $this->assertSame(202, $response->statusCode);
+        $this->assertNull($response->data);
+
+        $data = ['job_id' => 'abc-123'];
+        $custom = ApiResponse::accepted($data, 'Queued');
+        $this->assertSame('Queued', $custom->message);
+        $this->assertSame($data, $custom->data);
+        $this->assertSame(202, $custom->statusCode);
+    }
+
+    #[Test]
+    public function test_internal_server_error_response(): void
+    {
+        $response = ApiResponse::internalServerError();
+
+        $this->assertFalse($response->success);
+        $this->assertSame('Internal Server Error', $response->message);
+        $this->assertSame(500, $response->statusCode);
+        $this->assertNull($response->errors);
+
+        $errors = ['trace' => 'xyz'];
+        $custom = ApiResponse::internalServerError('Database down', $errors);
+        $this->assertSame('Database down', $custom->message);
+        $this->assertSame($errors, $custom->errors);
+    }
+
+    #[Test]
+    public function test_with_pagination_merges_pagination_meta(): void
+    {
+        $response = ApiResponse::success([['id' => 1], ['id' => 2]])
+            ->withPagination(total: 50, page: 2, perPage: 10);
+
+        $this->assertNotNull($response->meta);
+        $this->assertArrayHasKey('pagination', $response->meta);
+        $this->assertSame(50, $response->meta['pagination']['total']);
+        $this->assertSame(2, $response->meta['pagination']['page']);
+        $this->assertSame(10, $response->meta['pagination']['per_page']);
+        $this->assertSame(5, $response->meta['pagination']['last_page']);
+    }
+
+    #[Test]
+    public function test_with_pagination_preserves_existing_meta(): void
+    {
+        $response = ApiResponse::success(['x'])
+            ->withMeta(['request_id' => 'abc'])
+            ->withPagination(total: 25, page: 1, perPage: 10);
+
+        $this->assertSame('abc', $response->meta['request_id']);
+        $this->assertSame(3, $response->meta['pagination']['last_page']);
+    }
+
+    #[Test]
+    public function test_with_pagination_handles_zero_per_page(): void
+    {
+        $response = ApiResponse::success([])->withPagination(total: 10, page: 1, perPage: 0);
+
+        $this->assertSame(10, $response->meta['pagination']['last_page']);
+    }
+
+    #[Test]
     public function test_default_headers_is_empty_array(): void
     {
         $response = ApiResponse::success();

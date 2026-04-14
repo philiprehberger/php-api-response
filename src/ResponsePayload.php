@@ -56,6 +56,26 @@ final class ResponsePayload implements JsonSerializable, Stringable
         );
     }
 
+    public function withPagination(int $total, int $page, int $perPage): static
+    {
+        return new self(
+            success: $this->success,
+            message: $this->message,
+            data: $this->data,
+            errors: $this->errors,
+            statusCode: $this->statusCode,
+            meta: array_merge($this->meta ?? [], [
+                'pagination' => [
+                    'total' => $total,
+                    'page' => $page,
+                    'per_page' => $perPage,
+                    'last_page' => (int) ceil($total / max($perPage, 1)),
+                ],
+            ]),
+            headers: $this->headers,
+        );
+    }
+
     public function withStatusCode(int $code): self
     {
         return new self(

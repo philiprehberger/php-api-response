@@ -37,6 +37,10 @@ $response = ApiResponse::created(['id' => 42]);
 
 // No content
 $response = ApiResponse::noContent();
+
+// Accepted (202) — request queued for async processing
+$response = ApiResponse::accepted(['job_id' => 'abc-123']);
+// {"success": true, "message": "Accepted", "data": {"job_id": "abc-123"}}
 // {"success": true, "message": "No Content", "data": null}
 ```
 
@@ -50,6 +54,15 @@ $response = ApiResponse::error('Something went wrong', 500);
 // Not found
 $response = ApiResponse::notFound('User not found');
 // {"success": false, "message": "User not found", "data": null}
+
+// Unauthorized (401)
+$response = ApiResponse::unauthorized('Token expired');
+
+// Forbidden (403)
+$response = ApiResponse::forbidden('Insufficient permissions');
+
+// Internal server error (500)
+$response = ApiResponse::internalServerError('Database unavailable');
 
 // Validation error
 $response = ApiResponse::validationError([
@@ -126,6 +139,10 @@ $response = ApiResponse::success(['id' => 1, 'name' => 'John'])
 $response = ApiResponse::paginated($users, total: 150, page: 2, perPage: 25)
     ->withMeta(['cache' => 'hit']);
 
+// Attach pagination to any success response after the fact
+$response = ApiResponse::success($users)
+    ->withPagination(total: 150, page: 2, perPage: 25);
+
 // Attach headers for use in your framework's response
 $payload = ApiResponse::created(['id' => 42])
     ->withHeaders(['Location' => '/users/42']);
@@ -164,6 +181,10 @@ All responses follow a consistent structure:
 | `ApiResponse::error($message, $statusCode, $errors)` | 400 | Generic error response |
 | `ApiResponse::validationError($errors, $message)` | 422 | Validation failure with field errors |
 | `ApiResponse::notFound($message)` | 404 | Resource not found |
+| `ApiResponse::unauthorized($message, $errors)` | 401 | Authentication required or failed |
+| `ApiResponse::forbidden($message, $errors)` | 403 | Authenticated but not permitted |
+| `ApiResponse::accepted($data, $message)` | 202 | Request accepted for asynchronous processing |
+| `ApiResponse::internalServerError($message, $errors)` | 500 | Unexpected server-side failure |
 | `ApiResponse::paginated($items, $total, $page, $perPage)` | 200 | Paginated list with metadata |
 
 ### Fluent Methods on `ResponsePayload`
@@ -173,6 +194,7 @@ All responses follow a consistent structure:
 | `withMeta(array $meta)` | Returns a new instance with merged metadata |
 | `withHeaders(array $headers)` | Returns a new instance with custom response headers |
 | `withStatusCode(int $code)` | Returns a new instance with overridden HTTP status code |
+| `withPagination(int $total, int $page, int $perPage)` | Returns a new instance with a `pagination` block merged into meta |
 
 ## Development
 
